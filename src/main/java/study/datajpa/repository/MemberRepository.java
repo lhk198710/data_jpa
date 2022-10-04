@@ -7,6 +7,8 @@ import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 
 import javax.annotation.PreDestroy;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -28,4 +30,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Query를 이용해 내가 생성한 DTO 조회하기
     @Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
     List<MemberDto> findMemberDto();
+
+    @Query("select m from Member m where m.username in :names")
+    List<Member> findByNames(@Param("names") Collection<String> names);
 }
