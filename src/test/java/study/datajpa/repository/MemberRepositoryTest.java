@@ -280,4 +280,35 @@ class MemberRepositoryTest {
             System.err.println("member.team = " + member.getTeam().getName());
         }
     }
+
+    @Test
+    public void queryHint() {
+        // given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        // when 1 ( 쿼리 힌트 미사용 )
+//        Member findMember = memberRepository.findById(member1.getId()).get();
+//        findMember.setUsername("member2");
+//
+//        em.flush(); // flush를 하면 변경 감지 동작.(더티체킹) DB에 업데이트 쿼리가 나감.
+
+        // when 2 ( 쿼리 힌트 사용 [readyonly 속성만 줌. 변경 감지 체크 안 함.])
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        findMember.setUsername("member2");
+
+        em.flush();
+    }
+
+    @Test
+    public void lock() {
+        // given
+        Member member1 = memberRepository.save(new Member("member1", 10));
+        em.flush();
+        em.clear();
+
+        // when
+        List<Member> findMember = memberRepository.findLockByUsername("member1");
+    }
 }
