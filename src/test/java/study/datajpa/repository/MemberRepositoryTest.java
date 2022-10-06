@@ -13,6 +13,8 @@ import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +31,9 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() {
@@ -205,5 +210,36 @@ class MemberRepositoryTest {
         assertThat(page.getTotalPages()).isEqualTo(2);
         assertThat(page.isFirst()).isTrue();
         assertThat(page.hasNext()).isTrue();
+    }
+
+    @Test
+    public void bulkUpdate() {
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+        // em.flush();
+        // em.clear();
+
+        List<Member> result = memberRepository.findByUsername("member5");
+        Member member = result.get(0);
+
+        /**
+         * JPA는 영속성 컨텍스트에서 엔티티를 관리함.
+         *  - 벌크 연산을 하면 영속성 컨텍스트를 무시해 버림. > DB에는 반영이 되나 영속성 컨텍스트에서는 업데이트 된 내용을 모름.
+         *     - 영속성 컨텍스트에서도 제대로 반영하기 위해서는 EntityManager.flush & clear 해줘야함.(특히 클리어)
+         *     - flush & clear 하면 41로 조회.
+         *     - flush & clear 안 하면 40으로 조회.
+         *     - clear를 안 해줄거면 @Modifying 어노테이션에서 clearAutomatically 값 true로 줄 것
+         */
+        System.err.println(member);
+
+        // then
+        assertThat(resultCount).isEqualTo(3);
     }
 }
