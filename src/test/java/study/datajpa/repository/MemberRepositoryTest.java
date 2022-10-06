@@ -242,4 +242,42 @@ class MemberRepositoryTest {
         // then
         assertThat(resultCount).isEqualTo(3);
     }
+
+    @Test
+    public void findMemberLazy() {
+        // ginen
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        em.flush();
+        em.clear();
+
+        // when N + 1 문제 발생
+        // select Member 1(Member만 DB에서 가지고 옴.)
+        List<Member> members = memberRepository.findAll();
+        //List<Member> members = memberRepository.findMemberFetchJoin(); // fetch join(JPQL)
+
+        for(Member member : members) {
+            System.err.println("member = " + member.getUsername());
+            /**
+             * fetch join X : Team HibernateProxy
+             * fetch join O : Team
+             */
+            System.err.println("member.teamClass = " + member.getTeam().getClass());
+            /**
+             * fetch join X : 실제로 Team 테이블 조회
+             * fetch join O : 한번에 조회된 데이터 사용
+             */
+            System.err.println("member.team = " + member.getTeam().getName());
+        }
+    }
 }
