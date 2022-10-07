@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
     // 파라미터가 길어지게 되면 가독성이 떨어지고 관리가 힘들어짐. 간단한 조회에 대해서는 쓰기 편함.
     List<Member> findByUsernameAndAgeGreaterThan(String username, int age);
 
