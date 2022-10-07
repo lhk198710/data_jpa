@@ -1,9 +1,12 @@
 package study.datajpa.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.repository.MemberRepository;
 
@@ -31,8 +34,30 @@ public class MemberController {
         return  member.getUsername();
     }
 
+    @GetMapping("/members")
+    public Page<MemberDto> list(Pageable pageable) {
+        /**
+         * 참고
+         * @PageableDefault : 기본 Pageable의 룰을 내 입맛에 맞게 지정.
+         */
+
+        /**
+         * http://localhost:8080/members?page=0 : 0번 인덱스부터 20개 꺼냄.
+         * http://localhost:8080/members?page=1 : 21번부터 나옴.
+         * http://localhost:8080/members?page=0&size=3 : 0번 인덱스부터 시작, 3개만 출력.
+         * http://localhost:8080/members?page=0&size=3&sord=id,desc : 3개만 출력. id 기준 desc 정렬. sort는 기본이 asc라 asc는 생략 가능.
+         */
+
+        Page<Member> page = memberRepository.findAll(pageable);
+        // Page<MemberDto> toMap = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null)); // Entity를 그대로 노출시키지 않기 위함.
+        Page<MemberDto> toMap = page.map(MemberDto::new);
+        return toMap;
+    }
+
     @PostConstruct
     public void init() {
-        memberRepository.save(new Member("userA"));
+        for (int i=0; i<100; i++) {
+            memberRepository.save(new Member("user" + i, i));
+        }
     }
 }
